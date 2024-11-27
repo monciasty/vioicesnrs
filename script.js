@@ -12,16 +12,19 @@ if (!('webkitSpeechRecognition' in window)) {
     const recognition = new webkitSpeechRecognition();
     recognition.continuous = false; 
     recognition.interimResults = false;
+    recognition.recognizing = false;
 
     recognition.onstart = function() {
         notification.textContent = "Nagrywanie rozpoczęte...";
         notification.style.color = "green";
         output.textContent = ""; 
+        recognition.recognizing = true;
     };
 
     recognition.onend = function() {
         notification.textContent = "Nagrywanie zakończone.";
         notification.style.color = "red";
+        recognition.recognizing = false;
     };
 
     recognition.onresult = function(event) {
@@ -40,8 +43,16 @@ if (!('webkitSpeechRecognition' in window)) {
     };
 
     startBtn.onclick = function() {
-        recognition.lang = languageSelect.value;
-        recognition.start();
+        if (recognition.recognizing) {
+            recognition.stop();
+            startBtn.textContent = "Start";
+            startBtn.style.backgroundColor = "";
+        } else {
+            recognition.lang = languageSelect.value;
+            recognition.start();
+            startBtn.textContent = "Stop";
+            startBtn.style.backgroundColor = "lightgray";
+        }
     };
 }
 
@@ -83,4 +94,8 @@ const displayData = (payload) => {
     `).join('');
 
     apiresults.innerHTML = displayItems || "<p>Brak wyników.</p>";
+    
+    // Resetowanie przycisku po wyświetleniu wyników
+    startBtn.textContent = "Start";
+    startBtn.style.backgroundColor = "";
 }
